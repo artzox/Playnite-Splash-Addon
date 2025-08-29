@@ -1,0 +1,179 @@
+﻿<UserControl x:Class="SplashAddon.SplashAddonSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:SplashAddon">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="20">
+            <TextBlock Text="Default Splash Screen Duration (seconds):" Margin="0,0,0,5" FontWeight="Bold"/>
+            <TextBox Text="{Binding SplashScreenDuration, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="100" HorizontalAlignment="Left" Margin="0,0,0,15"/>
+
+            <CheckBox Content="Use Platform-Specific Timers" 
+                      IsChecked="{Binding UsePlatformSpecificTimers, UpdateSourceTrigger=PropertyChanged}"
+                      FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Configure different splash screen durations for each platform:" 
+                       Margin="0,0,0,10" FontStyle="Italic" Foreground="Gray"/>
+
+            <Border BorderBrush="LightGray" BorderThickness="1" Padding="15" Margin="0,0,0,15"
+                    IsEnabled="{Binding UsePlatformSpecificTimers}">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding UsePlatformSpecificTimers}" Value="False">
+                                <Setter Property="Opacity" Value="0.5"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="300"/>
+                        <ColumnDefinition Width="100"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Platform" FontWeight="Bold"/>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Duration (sec)" FontWeight="Bold"/>
+
+                    <ComboBox Grid.Row="1" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform1, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" 
+                             Text="{Binding Duration1, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="2" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform2, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" 
+                             Text="{Binding Duration2, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="3" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform3, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" 
+                             Text="{Binding Duration3, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="4" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform4, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" 
+                             Text="{Binding Duration4, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="5" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform5, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="5" Grid.Column="1" 
+                             Text="{Binding Duration5, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="6" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform6, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="6" Grid.Column="1" 
+                             Text="{Binding Duration6, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="7" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform7, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="7" Grid.Column="1" 
+                             Text="{Binding Duration7, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="8" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform8, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="8" Grid.Column="1" 
+                             Text="{Binding Duration8, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="9" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform9, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="9" Grid.Column="1" 
+                             Text="{Binding Duration9, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+
+                    <ComboBox Grid.Row="10" Grid.Column="0" 
+                              ItemsSource="{Binding AvailablePlatforms}"
+                              SelectedItem="{Binding Platform10, UpdateSourceTrigger=PropertyChanged}"
+                              Width="280" HorizontalAlignment="Left"/>
+                    <TextBox Grid.Row="10" Grid.Column="1" 
+                             Text="{Binding Duration10, UpdateSourceTrigger=PropertyChanged}"
+                             Width="80" HorizontalAlignment="Left" Margin="5,0"/>
+                </Grid>
+            </Border>
+
+            <TextBlock Text="Note: When platform-specific timers are disabled, the default duration will be used for all platforms." 
+                       FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Game-Specific Durations (highest priority):" Margin="0,10,0,5" FontWeight="Bold"/>
+            <TextBlock Text="Format: GameID:Duration (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3:15)" 
+                       FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
+            <TextBox x:Name="GameSpecificTextBox"
+                     Text="{Binding GameSpecificDurationsText, UpdateSourceTrigger=LostFocus}" 
+                     Height="100" 
+                     AcceptsReturn="True"
+                     AcceptsTab="False"
+                     TextWrapping="NoWrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Auto"
+                     HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Top"
+                     Padding="5"
+                     FontFamily="Consolas"
+                     Margin="0,0,0,10"/>
+
+            <TextBlock Text="Priority: 1) Game-specific durations (above), 2) Platform-specific durations, 3) Default duration" 
+                       FontStyle="Italic" Foreground="DarkBlue" FontSize="11" FontWeight="Bold" Margin="0,0,0,15"/>
+
+            <TextBlock Text="Excluded Game IDs (one per line):" Margin="0,10,0,5" FontWeight="Bold"/>
+            <TextBox x:Name="ExcludedIdsTextBox"
+                     Text="{Binding ExcludedGameIdsText, UpdateSourceTrigger=LostFocus}" 
+                     Height="150" 
+                     AcceptsReturn="True"
+                     AcceptsTab="False"
+                     TextWrapping="NoWrap"
+                     VerticalScrollBarVisibility="Auto"
+                     HorizontalScrollBarVisibility="Disabled"
+                     HorizontalContentAlignment="Stretch"
+                     VerticalContentAlignment="Top"
+                     Padding="5"
+                     FontFamily="Consolas"
+                     Margin="0,0,0,10"/>
+
+            <TextBlock Text="Tip: Press Enter after each Game ID to start a new line. Games in this list will skip the splash screen entirely." 
+                       FontStyle="Italic" 
+                       Foreground="Gray" 
+                       FontSize="11"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

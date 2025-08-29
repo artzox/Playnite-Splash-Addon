@@ -1,0 +1,7 @@
+﻿Id: 12345678-1234-1234-1234-1234567890AB
+Name: Splash Addon
+Author: Artzox
+Version: 1.0.0
+Module: SplashAddon.dll
+Type: GenericPlugin
+EntryPoint: SplashAddon.SplashAddonPlugin

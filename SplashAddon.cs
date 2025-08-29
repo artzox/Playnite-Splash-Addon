@@ -1,0 +1,524 @@
+﻿// SplashAddon.cs
+// Author: Artzox
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using Newtonsoft.Json;
+using Playnite.SDK;
+using Playnite.SDK.Events;
+using Playnite.SDK.Models;
+using Playnite.SDK.Plugins;
+
+namespace SplashAddon
+{
+    public class SplashAddonSettings : ObservableObject, ISettings
+    {
+        private List<string> _excludedGameIds = new List<string>();
+        private int _splashScreenDuration = 10;
+        private bool _usePlatformSpecificTimers = false;
+        private Dictionary<string, int> _gameSpecificDurations = new Dictionary<string, int>();
+
+        // Hardcoded properties for the 10 platforms and their durations
+        private string _platform1;
+        private int _duration1;
+        private string _platform2;
+        private int _duration2;
+        private string _platform3;
+        private int _duration3;
+        private string _platform4;
+        private int _duration4;
+        private string _platform5;
+        private int _duration5;
+        private string _platform6;
+        private int _duration6;
+        private string _platform7;
+        private int _duration7;
+        private string _platform8;
+        private int _duration8;
+        private string _platform9;
+        private int _duration9;
+        private string _platform10;
+        private int _duration10;
+
+        [JsonProperty("ExcludedGameIds")]
+        public List<string> ExcludedGameIds { get => _excludedGameIds; set => SetValue(ref _excludedGameIds, value); }
+
+        [JsonProperty("SplashScreenDuration")]
+        public int SplashScreenDuration { get => _splashScreenDuration; set => SetValue(ref _splashScreenDuration, value); }
+
+        [JsonProperty("UsePlatformSpecificTimers")]
+        public bool UsePlatformSpecificTimers { get => _usePlatformSpecificTimers; set => SetValue(ref _usePlatformSpecificTimers, value); }
+
+        [JsonProperty("GameSpecificDurations")]
+        public Dictionary<string, int> GameSpecificDurations { get => _gameSpecificDurations; set => SetValue(ref _gameSpecificDurations, value); }
+
+        // Mapped properties for the 10 hardcoded UI elements
+        [JsonProperty("Platform1")]
+        public string Platform1 { get => _platform1; set => SetValue(ref _platform1, value); }
+        [JsonProperty("Duration1")]
+        public int Duration1 { get => _duration1; set => SetValue(ref _duration1, value); }
+        [JsonProperty("Platform2")]
+        public string Platform2 { get => _platform2; set => SetValue(ref _platform2, value); }
+        [JsonProperty("Duration2")]
+        public int Duration2 { get => _duration2; set => SetValue(ref _duration2, value); }
+        [JsonProperty("Platform3")]
+        public string Platform3 { get => _platform3; set => SetValue(ref _platform3, value); }
+        [JsonProperty("Duration3")]
+        public int Duration3 { get => _duration3; set => SetValue(ref _duration3, value); }
+        [JsonProperty("Platform4")]
+        public string Platform4 { get => _platform4; set => SetValue(ref _platform4, value); }
+        [JsonProperty("Duration4")]
+        public int Duration4 { get => _duration4; set => SetValue(ref _duration4, value); }
+        [JsonProperty("Platform5")]
+        public string Platform5 { get => _platform5; set => SetValue(ref _platform5, value); }
+        [JsonProperty("Duration5")]
+        public int Duration5 { get => _duration5; set => SetValue(ref _duration5, value); }
+        [JsonProperty("Platform6")]
+        public string Platform6 { get => _platform6; set => SetValue(ref _platform6, value); }
+        [JsonProperty("Duration6")]
+        public int Duration6 { get => _duration6; set => SetValue(ref _duration6, value); }
+        [JsonProperty("Platform7")]
+        public string Platform7 { get => _platform7; set => SetValue(ref _platform7, value); }
+        [JsonProperty("Duration7")]
+        public int Duration7 { get => _duration7; set => SetValue(ref _duration7, value); }
+        [JsonProperty("Platform8")]
+        public string Platform8 { get => _platform8; set => SetValue(ref _platform8, value); }
+        [JsonProperty("Duration8")]
+        public int Duration8 { get => _duration8; set => SetValue(ref _duration8, value); }
+        [JsonProperty("Platform9")]
+        public string Platform9 { get => _platform9; set => SetValue(ref _platform9, value); }
+        [JsonProperty("Duration9")]
+        public int Duration9 { get => _duration9; set => SetValue(ref _duration9, value); }
+        [JsonProperty("Platform10")]
+        public string Platform10 { get => _platform10; set => SetValue(ref _platform10, value); }
+        [JsonProperty("Duration10")]
+        public int Duration10 { get => _duration10; set => SetValue(ref _duration10, value); }
+
+        [JsonIgnore]
+        public string ExcludedGameIdsText
+        {
+            get => string.Join(Environment.NewLine, ExcludedGameIds ?? new List<string>());
+            set
+            {
+                var ids = value?.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                                 ?.Select(id => id.Trim())
+                                 ?.Where(id => !string.IsNullOrEmpty(id))
+                                 ?.Distinct()
+                                 ?.ToList() ?? new List<string>();
+                ExcludedGameIds = ids;
+                OnPropertyChanged(nameof(ExcludedGameIdsText));
+            }
+        }
+
+        [JsonIgnore]
+        public string GameSpecificDurationsText
+        {
+            get
+            {
+                if (GameSpecificDurations == null || !GameSpecificDurations.Any())
+                    return string.Empty;
+
+                return string.Join(Environment.NewLine,
+                    GameSpecificDurations.Select(kvp => $"{kvp.Key}:{kvp.Value}"));
+            }
+            set
+            {
+                ParseGameSpecificDurations(value);
+                OnPropertyChanged(nameof(GameSpecificDurationsText));
+            }
+        }
+
+        public void ParseGameSpecificDurations(string rawText)
+        {
+            var durations = new Dictionary<string, int>();
+            if (!string.IsNullOrEmpty(rawText))
+            {
+                var lines = rawText.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var line in lines)
+                {
+                    var trimmedLine = line.Trim();
+                    if (string.IsNullOrEmpty(trimmedLine)) continue;
+
+                    var parts = trimmedLine.Split(':');
+                    if (parts.Length == 2 &&
+                        !string.IsNullOrWhiteSpace(parts[0]) &&
+                        int.TryParse(parts[1].Trim(), out int duration) &&
+                        duration > 0)
+                    {
+                        durations[parts[0].Trim()] = duration;
+                    }
+                }
+            }
+            GameSpecificDurations = durations;
+        }
+
+        public SplashAddonSettings()
+        {
+            if (GameSpecificDurations == null)
+                GameSpecificDurations = new Dictionary<string, int>();
+        }
+
+        [JsonIgnore]
+        public static List<string> AvailablePlatforms => new List<string>
+        {
+            "",
+            "3DO Interactive Multiplayer",
+            "Amstrad CPC",
+            "Apple II",
+            "Atari 2600",
+            "Atari 5200",
+            "Atari 7800",
+            "Atari 8-bit",
+            "Atari Jaguar",
+            "Atari Lynx",
+            "Atari ST/STE",
+            "Bandai WonderSwan",
+            "Bandai WonderSwan Color",
+            "Coleco ColecoVision",
+            "Commodore Amiga",
+            "Commodore Amiga CD32",
+            "Commodore Amiga CDTV",
+            "Commodore Plus/4",
+            "Commodore VIC20",
+            "GCE Vectrex",
+            "Macintosh",
+            "Magnavox Odyssey 2",
+            "Mattel Intellivision",
+            "Microsoft MSX",
+            "Microsoft MSX2",
+            "Microsoft Xbox",
+            "Microsoft Xbox 360",
+            "Microsoft Xbox One",
+            "Microsoft Xbox Series",
+            "NEC PC-98",
+            "NEC PC-FX",
+            "NEC SuperGrafx",
+            "NEC TurboGrafx 16",
+            "NEC TurboGrafx-CD",
+            "Nintendo 3DS",
+            "Nintendo 64",
+            "Nintendo DS",
+            "Nintendo DSi",
+            "Nintendo Entertainment System",
+            "Nintendo Family Computer Disk System",
+            "Nintendo Game Boy",
+            "Nintendo Game Boy Advance",
+            "Nintendo Game Boy Color",
+            "Nintendo GameCube",
+            "Nintendo SNES",
+            "Nintendo Switch",
+            "Nintendo Switch 2",
+            "Nintendo Virtual Boy",
+            "Nintendo Wii",
+            "Nintendo Wii U",
+            "PC",
+            "PC (DOS)",
+            "PC (Linux)",
+            "PC (Windows)",
+            "Philips CD-i",
+            "PlayStation",
+            "PlayStation 2",
+            "PlayStation 3",
+            "PlayStation 4",
+            "PlayStation 5",
+            "PlayStation Portable",
+            "PlayStation Vita",
+            "Sega 32X",
+            "Sega CD",
+            "Sega Dreamcast",
+            "Sega Game Gear",
+            "Sega Genesis",
+            "Sega Master System",
+            "Sega Saturn",
+            "SNK Neo Geo",
+            "SNK Neo Geo CD",
+            "SNK Neo Geo Pocket",
+            "SNK Neo Geo Pocket Color",
+            "Sony PSP"
+        };
+
+        public void BeginEdit() { }
+        public void CancelEdit() { }
+        public void EndEdit() { }
+
+        public ISettings GetDefaults()
+        {
+            return new SplashAddonSettings();
+        }
+
+        public bool VerifySettings(out List<string> errors)
+        {
+            errors = new List<string>();
+            if (SplashScreenDuration <= 0)
+            {
+                errors.Add("Splash Screen Duration must be greater than 0.");
+            }
+            if (GameSpecificDurations != null)
+            {
+                foreach (var kvp in GameSpecificDurations)
+                {
+                    if (kvp.Value <= 0)
+                    {
+                        errors.Add($"Duration for game ID '{kvp.Key}' must be greater than 0.");
+                    }
+                }
+            }
+            return errors.Count == 0;
+        }
+
+        public int GetDurationForGame(string gameId, string platformName)
+        {
+            // Priority 1: Check for game-specific duration
+            if (GameSpecificDurations != null && !string.IsNullOrEmpty(gameId) && GameSpecificDurations.ContainsKey(gameId))
+            {
+                return GameSpecificDurations[gameId];
+            }
+
+            // Priority 2: Check for platform-specific duration if the option is enabled
+            if (UsePlatformSpecificTimers && !string.IsNullOrEmpty(platformName))
+            {
+                var platformDurations = new Dictionary<string, int>();
+
+                // Safely add platform durations, checking for null/empty keys
+                if (!string.IsNullOrEmpty(Platform1)) platformDurations.Add(Platform1, Duration1);
+                if (!string.IsNullOrEmpty(Platform2)) platformDurations.Add(Platform2, Duration2);
+                if (!string.IsNullOrEmpty(Platform3)) platformDurations.Add(Platform3, Duration3);
+                if (!string.IsNullOrEmpty(Platform4)) platformDurations.Add(Platform4, Duration4);
+                if (!string.IsNullOrEmpty(Platform5)) platformDurations.Add(Platform5, Duration5);
+                if (!string.IsNullOrEmpty(Platform6)) platformDurations.Add(Platform6, Duration6);
+                if (!string.IsNullOrEmpty(Platform7)) platformDurations.Add(Platform7, Duration7);
+                if (!string.IsNullOrEmpty(Platform8)) platformDurations.Add(Platform8, Duration8);
+                if (!string.IsNullOrEmpty(Platform9)) platformDurations.Add(Platform9, Duration9);
+                if (!string.IsNullOrEmpty(Platform10)) platformDurations.Add(Platform10, Duration10);
+
+                // Try exact match first
+                if (platformDurations.ContainsKey(platformName))
+                {
+                    var duration = platformDurations[platformName];
+                    if (duration > 0)
+                    {
+                        return duration;
+                    }
+                }
+
+                // Try partial matches for common platform name variations
+                var normalizedPlatform = platformName.ToLowerInvariant();
+                foreach (var kvp in platformDurations)
+                {
+                    if (!string.IsNullOrEmpty(kvp.Key))
+                    {
+                        var key = kvp.Key.ToLowerInvariant();
+                        if ((key.Contains(normalizedPlatform) || normalizedPlatform.Contains(key)) && kvp.Value > 0)
+                            return kvp.Value;
+                    }
+                }
+            }
+
+            // Priority 3: Use default duration as the ultimate fallback
+            return SplashScreenDuration;
+        }
+    }
+
+    public class SplashAddonPlugin : GenericPlugin
+    {
+        private static readonly ILogger Logger = LogManager.GetLogger();
+        private SplashAddonSettings _settings;
+
+        public override Guid Id { get; } = Guid.Parse("550e8400-e29b-41d4-a716-446655440000");
+
+        public SplashAddonPlugin(IPlayniteAPI api) : base(api)
+        {
+            _settings = LoadPluginSettings<SplashAddonSettings>() ?? new SplashAddonSettings();
+            Properties = new GenericPluginProperties
+            {
+                HasSettings = true
+            };
+        }
+
+        public override ISettings GetSettings(bool firstRunSettings)
+        {
+            return _settings;
+        }
+
+        public override UserControl GetSettingsView(bool firstRunSettings)
+        {
+            var settingsView = new SplashAddonSettingsView();
+            settingsView.DataContext = _settings;
+            return settingsView;
+        }
+
+        public override void OnApplicationStopped(OnApplicationStoppedEventArgs args)
+        {
+            SavePluginSettings(_settings);
+            base.OnApplicationStopped(args);
+        }
+
+        public override void OnGameStarting(OnGameStartingEventArgs args)
+        {
+            var game = args.Game;
+            if (_settings.ExcludedGameIds.Any(id => id.Trim() == game.Id.ToString()))
+            {
+                return;
+            }
+
+            string platformName = game.Platforms?.FirstOrDefault()?.Name ?? string.Empty;
+            int durationInSeconds = _settings.GetDurationForGame(game.Id.ToString(), platformName);
+
+            if (durationInSeconds <= 0)
+            {
+                durationInSeconds = _settings.SplashScreenDuration;
+                if (durationInSeconds <= 0)
+                {
+                    durationInSeconds = 1;
+                }
+            }
+
+            string bgImagePath = game.BackgroundImage;
+            string resolvedBgPath = null;
+            if (!string.IsNullOrEmpty(bgImagePath))
+            {
+                try
+                {
+                    if (bgImagePath.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resolvedBgPath = bgImagePath;
+                    }
+                    else
+                    {
+                        string playniteDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+                        if (!Path.IsPathRooted(bgImagePath))
+                        {
+                            resolvedBgPath = Path.Combine(playniteDir, "library", "files", bgImagePath);
+                        }
+                        else
+                        {
+                            resolvedBgPath = bgImagePath;
+                        }
+                        if (!File.Exists(resolvedBgPath))
+                        {
+                            resolvedBgPath = null;
+                        }
+                    }
+                }
+                catch { }
+            }
+            string logoPath = null;
+            try
+            {
+                string extraMetadataDir = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "ExtraMetadata", "Games", game.Id.ToString(), "Logo.png");
+                if (File.Exists(extraMetadataDir))
+                    logoPath = extraMetadataDir;
+            }
+            catch { }
+            var splashWindow = new Window
+            {
+                WindowStyle = WindowStyle.None,
+                WindowState = WindowState.Maximized,
+                Topmost = true,
+                Background = Brushes.Black,
+                ResizeMode = ResizeMode.NoResize,
+                ShowInTaskbar = false,
+                Opacity = 0
+            };
+            Image bgImage = null;
+            if (!string.IsNullOrEmpty(resolvedBgPath))
+            {
+                try
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(resolvedBgPath, UriKind.RelativeOrAbsolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                    bgImage = new Image { Source = bitmap, Stretch = Stretch.UniformToFill };
+                }
+                catch { }
+            }
+            if (bgImage == null)
+                bgImage = new Image { Stretch = Stretch.UniformToFill };
+            Image logoImage = null;
+            if (!string.IsNullOrEmpty(logoPath))
+            {
+                try
+                {
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.UriSource = new Uri(logoPath, UriKind.Absolute);
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.EndInit();
+                    logoImage = new Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = 300,
+                        Height = 100,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Bottom,
+                        Margin = new Thickness(20, 0, 0, 20)
+                    };
+                }
+                catch { }
+            }
+            var grid = new Grid();
+            grid.Children.Add(bgImage);
+            if (logoImage != null)
+                grid.Children.Add(logoImage);
+            splashWindow.Content = grid;
+            var storyboard = new Storyboard();
+            var fadeIn = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(1)
+            };
+            Storyboard.SetTarget(fadeIn, splashWindow);
+            Storyboard.SetTargetProperty(fadeIn, new PropertyPath(Window.OpacityProperty));
+            storyboard.Children.Add(fadeIn);
+            var closeTimer = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromSeconds(durationInSeconds)
+            };
+            closeTimer.Tick += (s, e) =>
+            {
+                closeTimer.Stop();
+                var fadeOut = new DoubleAnimation
+                {
+                    From = 1,
+                    To = 0,
+                    Duration = TimeSpan.FromSeconds(1)
+                };
+                Storyboard.SetTarget(fadeOut, splashWindow);
+                Storyboard.SetTargetProperty(fadeOut, new PropertyPath(Window.OpacityProperty));
+                var fadeStoryboard = new Storyboard();
+                fadeStoryboard.Children.Add(fadeOut);
+                fadeStoryboard.Completed += (s2, e2) =>
+                {
+                    try
+                    {
+                        splashWindow.Close();
+                    }
+                    catch { }
+                };
+                fadeStoryboard.Begin();
+            };
+            splashWindow.Loaded += (s, e) =>
+            {
+                storyboard.Begin();
+                closeTimer.Start();
+            };
+            try
+            {
+                splashWindow.Show();
+                splashWindow.Activate();
+            }
+            catch { }
+        }
+    }
+}
