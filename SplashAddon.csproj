@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="SplashAddon.cs" />
+    <Compile Include="SplashAddonSettings.cs" />
     <Compile Include="SplashAddonSettingsView.xaml.cs">
       <DependentUpon>SplashAddonSettingsView.xaml</DependentUpon>
     </Compile>
