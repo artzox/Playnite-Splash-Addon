@@ -64,6 +64,7 @@
     <None Include="extension.yaml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Manifest\SplashAddon.yaml" />
     <None Include="packages.config" />
     <None Include="plugin.yaml" />
   </ItemGroup>
@@ -86,6 +87,7 @@
     <Content Include="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Screenshots\Splash__Addon_Menu.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
