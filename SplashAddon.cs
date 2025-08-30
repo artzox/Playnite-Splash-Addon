@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -56,14 +55,7 @@ namespace SplashAddon
 
         public override void OnGameStarting(OnGameStartingEventArgs args)
         {
-            if (_settings.ExcludedGameIds.Any(id => id.Trim() == args.Game.Id.ToString()))
-            {
-                return;
-            }
-
             _gameStartTimestamp = DateTime.Now;
-            var duration = _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty);
-
             if (_settings.UseGameStartedTimer)
             {
                 // Show splash screen, but let OnGameStarted handle the timer
@@ -72,7 +64,7 @@ namespace SplashAddon
             else
             {
                 // Show splash screen with its own timer
-                ShowSplashScreen(args.Game, duration, true);
+                ShowSplashScreen(args.Game, _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty), true);
             }
         }
 
@@ -81,8 +73,7 @@ namespace SplashAddon
             if (_settings.UseGameStartedTimer)
             {
                 TimeSpan elapsed = DateTime.Now - _gameStartTimestamp;
-                var duration = _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty);
-                int remainingDuration = duration - (int)elapsed.TotalSeconds;
+                int remainingDuration = _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty) - (int)elapsed.TotalSeconds;
 
                 if (remainingDuration > 0)
                 {
@@ -166,6 +157,23 @@ namespace SplashAddon
 
         private void ShowSplashScreen(Game game, int durationInSeconds, bool startTimerImmediately)
         {
+            if (_settings.ExcludedGameIds.Any(id => id.Trim() == game.Id.ToString()))
+            {
+                return;
+            }
+
+            string platformName = game.Platforms?.FirstOrDefault()?.Name ?? string.Empty;
+            int duration = _settings.GetDurationForGame(game.Id.ToString(), platformName);
+
+            if (duration <= 0)
+            {
+                duration = _settings.SplashScreenDuration;
+                if (duration <= 0)
+                {
+                    duration = 1;
+                }
+            }
+
             string bgImagePath = game.BackgroundImage;
             string resolvedBgPath = null;
             if (!string.IsNullOrEmpty(bgImagePath))
@@ -178,44 +186,47 @@ namespace SplashAddon
                     }
                     else
                     {
-                        // New logic: Try the AppData path first (local installation)
-                        string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Playnite", "library", "files", bgImagePath);
-                        if (File.Exists(appDataPath))
+                        // Use the IsPortable property to correctly determine the base path
+                        string playniteDataDir;
+                        if (API.Instance.Paths.IsPortable)
                         {
-                            resolvedBgPath = appDataPath;
+                            playniteDataDir = API.Instance.Paths.ApplicationPath;
                         }
                         else
                         {
-                            // Fallback to the original logic for portable installations
-                            string playniteDir = Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-                            if (!Path.IsPathRooted(bgImagePath))
-                            {
-                                resolvedBgPath = Path.Combine(playniteDir, "library", "files", bgImagePath);
-                            }
-                            else
-                            {
-                                resolvedBgPath = bgImagePath;
-                            }
-                            if (!File.Exists(resolvedBgPath))
-                            {
-                                resolvedBgPath = null;
-                            }
+                            playniteDataDir = API.Instance.Paths.ConfigurationPath;
+                        }
+
+                        if (!Path.IsPathRooted(bgImagePath))
+                        {
+                            resolvedBgPath = Path.Combine(playniteDataDir, "library", "files", bgImagePath);
+                        }
+                        else
+                        {
+                            resolvedBgPath = bgImagePath;
+                        }
+
+                        if (!File.Exists(resolvedBgPath))
+                        {
+                            resolvedBgPath = null;
                         }
                     }
                 }
                 catch { }
             }
+
             string logoPath = null;
             try
             {
-                string extraMetadataDir = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location), "ExtraMetadata", "Games", game.Id.ToString(), "Logo.png");
+                string extraMetadataDir = Path.Combine(Playnite.SDK.API.Instance.Paths.ConfigurationPath, "ExtraMetadata", "Games", game.Id.ToString(), "Logo.png");
                 if (File.Exists(extraMetadataDir))
                     logoPath = extraMetadataDir;
             }
             catch { }
+
             var splashWindow = new Window
             {
-                Title = "SplashAddonSplashScreen", // Added title for lookup
+                Title = "SplashAddonSplashScreen",
                 WindowStyle = WindowStyle.None,
                 WindowState = WindowState.Maximized,
                 Topmost = true,
@@ -283,7 +294,7 @@ namespace SplashAddon
             {
                 var closeTimer = new System.Windows.Threading.DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(durationInSeconds)
+                    Interval = TimeSpan.FromSeconds(duration)
                 };
                 closeTimer.Tick += (s, e) =>
                 {
