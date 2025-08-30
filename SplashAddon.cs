@@ -26,7 +26,6 @@ namespace SplashAddon
         private DateTime _gameStartTimestamp;
 
         public override Guid Id { get; } = Guid.Parse("550e8400-e29b-41d4-a716-446655440000");
-<<<<<<< HEAD
 
         public SplashAddonPlugin(IPlayniteAPI api) : base(api)
         {
@@ -57,130 +56,11 @@ namespace SplashAddon
 
         public override void OnGameStarting(OnGameStartingEventArgs args)
         {
-            _gameStartTimestamp = DateTime.Now;
-            if (_settings.UseGameStartedTimer)
-            {
-                // Show splash screen, but let OnGameStarted handle the timer
-                ShowSplashScreen(args.Game, 0, false);
-            }
-            else
-            {
-                // Show splash screen with its own timer
-                ShowSplashScreen(args.Game, _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty), true);
-            }
-        }
-
-        public override void OnGameStarted(OnGameStartedEventArgs args)
-        {
-            if (_settings.UseGameStartedTimer)
-            {
-                TimeSpan elapsed = DateTime.Now - _gameStartTimestamp;
-                int remainingDuration = _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty) - (int)elapsed.TotalSeconds;
-
-                if (remainingDuration > 0)
-                {
-                    // This will find the active splash window and set its close timer
-                    SetCloseTimer(remainingDuration);
-                }
-                else
-                {
-                    // If the time has already passed, close the window immediately
-                    SetCloseTimer(0);
-                }
-            }
-        }
-=======
->>>>>>> updated to work with local and portable mode!
-
-        private void SetCloseTimer(int durationInSeconds)
-        {
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var splashWindow = Application.Current.Windows.OfType<Window>().FirstOrDefault(w => w.Title == "SplashAddonSplashScreen");
-                if (splashWindow == null) return;
-
-                var closeTimer = new System.Windows.Threading.DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(durationInSeconds)
-                };
-
-                closeTimer.Tick += (s, e) =>
-                {
-                    closeTimer.Stop();
-                    var fadeOut = new DoubleAnimation
-                    {
-                        From = 1,
-                        To = 0,
-                        Duration = TimeSpan.FromSeconds(1)
-                    };
-                    Storyboard.SetTarget(fadeOut, splashWindow);
-                    Storyboard.SetTargetProperty(fadeOut, new PropertyPath(Window.OpacityProperty));
-                    var fadeStoryboard = new Storyboard();
-                    fadeStoryboard.Children.Add(fadeOut);
-                    fadeStoryboard.Completed += (s2, e2) =>
-                    {
-                        try
-                        {
-                            splashWindow.Close();
-                        }
-                        catch { }
-                    };
-                    fadeStoryboard.Begin();
-                };
-
-                if (durationInSeconds > 0)
-                {
-                    closeTimer.Start();
-                }
-                else
-                {
-                    // Immediately trigger close if duration is 0
-                    closeTimer.Stop();
-                    var fadeOut = new DoubleAnimation
-                    {
-                        From = 1,
-                        To = 0,
-                        Duration = TimeSpan.FromSeconds(1)
-                    };
-                    Storyboard.SetTarget(fadeOut, splashWindow);
-                    Storyboard.SetTargetProperty(fadeOut, new PropertyPath(Window.OpacityProperty));
-                    var fadeStoryboard = new Storyboard();
-                    fadeStoryboard.Children.Add(fadeOut);
-                    fadeStoryboard.Completed += (s2, e2) =>
-                    {
-                        try
-                        {
-                            splashWindow.Close();
-                        }
-                        catch { }
-                    };
-                    fadeStoryboard.Begin();
-                }
-            });
-        }
-
-        private void ShowSplashScreen(Game game, int durationInSeconds, bool startTimerImmediately)
-        {
-<<<<<<< HEAD
-            if (_settings.ExcludedGameIds.Any(id => id.Trim() == game.Id.ToString()))
-=======
             if (_settings.ExcludedGameIds.Any(id => id.Trim() == args.Game.Id.ToString()))
->>>>>>> updated to work with local and portable mode!
             {
                 return;
             }
 
-<<<<<<< HEAD
-            string platformName = game.Platforms?.FirstOrDefault()?.Name ?? string.Empty;
-            int duration = _settings.GetDurationForGame(game.Id.ToString(), platformName);
-
-            if (duration <= 0)
-            {
-                duration = _settings.SplashScreenDuration;
-                if (duration <= 0)
-                {
-                    duration = 1;
-=======
             _gameStartTimestamp = DateTime.Now;
             var duration = _settings.GetDurationForGame(args.Game.Id.ToString(), args.Game.Platforms?.FirstOrDefault()?.Name ?? string.Empty);
 
@@ -213,7 +93,6 @@ namespace SplashAddon
                 {
                     // If the time has already passed, close the window immediately
                     SetCloseTimer(0);
->>>>>>> updated to work with local and portable mode!
                 }
             }
         }
@@ -404,11 +283,7 @@ namespace SplashAddon
             {
                 var closeTimer = new System.Windows.Threading.DispatcherTimer
                 {
-<<<<<<< HEAD
-                    Interval = TimeSpan.FromSeconds(duration)
-=======
                     Interval = TimeSpan.FromSeconds(durationInSeconds)
->>>>>>> updated to work with local and portable mode!
                 };
                 closeTimer.Tick += (s, e) =>
                 {
