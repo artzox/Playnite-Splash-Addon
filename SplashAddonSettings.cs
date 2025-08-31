@@ -26,6 +26,9 @@ namespace SplashAddon
         private Dictionary<string, int> _gameSpecificDurations = new Dictionary<string, int>();
         private bool _useGameStartedTimer = false;
 
+        // Private fields for logo size
+        private int _logoSize = 300;
+
         // Hardcoded properties for the 10 platforms and their durations
         private string _platform1;
         private int _duration1;
@@ -62,6 +65,10 @@ namespace SplashAddon
 
         [JsonProperty("UseGameStartedTimer")]
         public bool UseGameStartedTimer { get => _useGameStartedTimer; set => SetValue(ref _useGameStartedTimer, value); }
+
+        // Mapped property for logo size
+        [JsonProperty("LogoSize")]
+        public int LogoSize { get => _logoSize; set => SetValue(ref _logoSize, value); }
 
         // Mapped properties for the 10 hardcoded UI elements
         [JsonProperty("Platform1")]
@@ -151,9 +158,10 @@ namespace SplashAddon
                     if (string.IsNullOrEmpty(trimmedLine)) continue;
 
                     var parts = trimmedLine.Split(':');
+                    int duration;
                     if (parts.Length == 2 &&
                         !string.IsNullOrWhiteSpace(parts[0]) &&
-                        int.TryParse(parts[1].Trim(), out int duration) &&
+                        int.TryParse(parts[1].Trim(), out duration) &&
                         duration > 0)
                     {
                         durations[parts[0].Trim()] = duration;
@@ -254,6 +262,7 @@ namespace SplashAddon
 
         public ISettings GetDefaults()
         {
+            // Return a new instance with default values
             return new SplashAddonSettings();
         }
 
@@ -263,6 +272,10 @@ namespace SplashAddon
             if (SplashScreenDuration <= 0)
             {
                 errors.Add("Splash Screen Duration must be greater than 0.");
+            }
+            if (LogoSize < 0)
+            {
+                errors.Add("Logo size must be greater than or equal to 0.");
             }
             if (GameSpecificDurations != null)
             {

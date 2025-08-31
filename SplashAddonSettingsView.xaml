@@ -8,15 +8,23 @@
             <TextBox Text="{Binding SplashScreenDuration, UpdateSourceTrigger=PropertyChanged}" 
                      Width="100" HorizontalAlignment="Left" Margin="0,0,0,15"/>
 
-            <CheckBox Content="Use Platform-Specific Timers" 
-                      IsChecked="{Binding UsePlatformSpecificTimers, UpdateSourceTrigger=PropertyChanged}"
-                      FontWeight="Bold" Margin="0,0,0,10"/>
+            <TextBlock Text="Splash Screen Logo Size (px):" Margin="0,0,0,5" FontWeight="Bold"/>
+            <TextBox Text="{Binding LogoSize, UpdateSourceTrigger=PropertyChanged}" 
+                     Width="100" HorizontalAlignment="Left" Margin="0,0,0,5"/>
+            <TextBlock Text="Note: The logo will be scaled to match the aspect ratio. Default is 300px."
+                       FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,15"/>
 
+            <TextBlock Text="Description: Wait for game to start before timing splash screen duration" 
+                       Margin="0,0,0,5" FontStyle="Italic"/>
             <CheckBox Content="Wait for game to start before timing splash screen duration" 
                       IsChecked="{Binding UseGameStartedTimer, UpdateSourceTrigger=PropertyChanged}"
                       Margin="0,0,0,10"/>
 
-            <TextBlock Text="Configure different splash screen durations for each platform:" 
+            <CheckBox Content="Use platform-specific timers" 
+                      IsChecked="{Binding UsePlatformSpecificTimers, UpdateSourceTrigger=PropertyChanged}"
+                      FontWeight="Bold" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Configure different splash screen durations for each platform:"
                        Margin="0,0,0,10" FontStyle="Italic" Foreground="Gray"/>
 
             <Border BorderBrush="LightGray" BorderThickness="1" Padding="15" Margin="0,0,0,15"
@@ -37,6 +45,7 @@
                         <ColumnDefinition Width="100"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -135,7 +144,8 @@
                 </Grid>
             </Border>
 
-            <TextBlock Text="Note: When platform-specific timers are disabled, the default duration will be used for all platforms." FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,15"/>
+            <TextBlock Text="Note: When platform-specific timers are disabled, the default duration will be used for all platforms." 
+                       FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,15"/>
 
             <TextBlock Text="Game-Specific Durations (highest priority):" Margin="0,10,0,5" FontWeight="Bold"/>
             <TextBlock Text="Format: DatabaseID:Duration (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3:15)" 
@@ -154,11 +164,11 @@
                      FontFamily="Consolas"
                      Margin="0,0,0,10"/>
 
-            <TextBlock Text="Priority: 1) Game-specific durations (above), 2) Platform-specific durations, 3) Default duration" 
+            <TextBlock Text="Note: Priority: 1) Game-specific durations (above), 2) Platform-specific durations, 3) Default duration" 
                        FontStyle="Italic" Foreground="Purple" FontSize="11" FontWeight="Bold" Margin="0,0,0,15"/>
 
             <TextBlock Text="Excluded Game IDs (one per line):" Margin="0,10,0,5" FontWeight="Bold"/>
-            <TextBlock Text="Games listed here will completely skip the splash screen." FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock Text="Description: Games listed here will completely skip the splash screen." FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
             <TextBlock Text="Format: DatabaseID (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3)"
                        FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
             <TextBox x:Name="ExcludedIdsTextBox"

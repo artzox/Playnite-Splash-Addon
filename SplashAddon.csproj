@@ -87,7 +87,7 @@
     <Content Include="icon.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Screenshots\Splash__Addon_Menu.png" />
+    <Content Include="Screenshots\Splash_Addon_1.02.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

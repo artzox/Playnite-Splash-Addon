@@ -265,8 +265,8 @@ namespace SplashAddon
                     {
                         Source = bitmap,
                         Stretch = Stretch.Uniform,
-                        Width = 300,
-                        Height = 100,
+                        Width = _settings.LogoSize,
+                        Height = double.NaN, // Using NaN for auto-height
                         HorizontalAlignment = HorizontalAlignment.Left,
                         VerticalAlignment = VerticalAlignment.Bottom,
                         Margin = new Thickness(20, 0, 0, 20)
