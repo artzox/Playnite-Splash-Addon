@@ -138,7 +138,7 @@
             <TextBlock Text="Note: When platform-specific timers are disabled, the default duration will be used for all platforms." FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,15"/>
 
             <TextBlock Text="Game-Specific Durations (highest priority):" Margin="0,10,0,5" FontWeight="Bold"/>
-            <TextBlock Text="Format: GameID:Duration (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3:15)" 
+            <TextBlock Text="Format: DatabaseID:Duration (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3:15)" 
                        FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
             <TextBox x:Name="GameSpecificTextBox"
                      Text="{Binding GameSpecificDurationsText, UpdateSourceTrigger=LostFocus}" 
@@ -155,9 +155,12 @@
                      Margin="0,0,0,10"/>
 
             <TextBlock Text="Priority: 1) Game-specific durations (above), 2) Platform-specific durations, 3) Default duration" 
-                       FontStyle="Italic" Foreground="DarkBlue" FontSize="11" FontWeight="Bold" Margin="0,0,0,15"/>
+                       FontStyle="Italic" Foreground="Purple" FontSize="11" FontWeight="Bold" Margin="0,0,0,15"/>
 
             <TextBlock Text="Excluded Game IDs (one per line):" Margin="0,10,0,5" FontWeight="Bold"/>
+            <TextBlock Text="Games listed here will completely skip the splash screen." FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
+            <TextBlock Text="Format: DatabaseID (one per line, e.g., f2885ae8-b448-4f87-bbaa-eb827423b4e3)"
+                       FontStyle="Italic" Foreground="Gray" FontSize="11" Margin="0,0,0,5"/>
             <TextBox x:Name="ExcludedIdsTextBox"
                      Text="{Binding ExcludedGameIdsText, UpdateSourceTrigger=LostFocus}" 
                      Height="150" 
@@ -172,7 +175,7 @@
                      FontFamily="Consolas"
                      Margin="0,0,0,10"/>
 
-            <TextBlock Text="Tip: Press Enter after each Game ID to start a new line. Games in this list will skip the splash screen entirely." 
+            <TextBlock Text="Tip: Press Enter after each DatabaseID to start a new line." 
                        FontStyle="Italic" 
                        Foreground="Gray" 
                        FontSize="11"/>
